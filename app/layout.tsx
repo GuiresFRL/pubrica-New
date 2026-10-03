@@ -10,8 +10,8 @@ import { SITE_URL } from '@/lib/routes';
    here is what every page shares. */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  robots: { index: true, follow: true,
-    googleBot: { index: true, follow: true, 'max-snippet': -1, 'max-image-preview': 'large' } },
+  robots: { index: false, follow: false,
+    googleBot: { index: false, follow: false, 'max-snippet': -1, 'max-image-preview': 'large' } },
   openGraph: { siteName: 'Pubrica', locale: 'en', type: 'website' },
   twitter: { card: 'summary_large_image' },
 };

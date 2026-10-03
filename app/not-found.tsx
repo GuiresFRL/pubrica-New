@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Page not found — Pubrica',
-  robots: { index: false, follow: true },
+  robots: { index: false, follow: false },
 };
 
 export default function NotFound() {
