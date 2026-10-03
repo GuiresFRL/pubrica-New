@@ -3095,7 +3095,10 @@ function setMeta(r){
   function render(r){
     if(!ROUTES[r]) r = '/';
 
-    views.forEach(function(v){ v.hidden = v.dataset.route !== r; });
+    // Each Next route renders exactly one view and it carries no data-route;
+    // only the multi-view static build needs the show/hide switching.
+    if(views.length > 1) views.forEach(function(v){ v.hidden = v.dataset.route !== r; });
+    else views[0].hidden = false;
     setMeta(r);
 
     document.querySelectorAll('[data-nav]').forEach(function(a){
