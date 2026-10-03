@@ -3065,6 +3065,28 @@ function setMeta(r){
   build();
 })();
 
+/* Served from a sub-path (GitHub Pages project site)? Every root-relative link
+   and image is then one segment short, so prefix them here, now and as the page
+   builds more of them. BASE is '' anywhere else and all of this is a no-op. */
+const BASE = /^\/pubrica-New(\/|$)/.test(location.pathname) ? '/pubrica-New' : '';
+(function basePrefix(){
+  if(!BASE) return;
+  function pre(v){ return (v && v.charAt(0) === '/' && v.charAt(1) !== '/' && v.indexOf(BASE + '/') !== 0 && v !== BASE) ? BASE + v : null; }
+  function fix(root){
+    root.querySelectorAll('a[href^="/"], img[src^="/"], link[href^="/"], source[src^="/"]').forEach(function(el){
+      const attr = el.hasAttribute('href') ? 'href' : 'src';
+      const n = pre(el.getAttribute(attr));
+      if(n) el.setAttribute(attr, n);
+    });
+  }
+  let queued = false;
+  new MutationObserver(function(){
+    if(queued) return; queued = true;
+    requestAnimationFrame(function(){ queued = false; fix(document); });
+  }).observe(document.documentElement, { childList:true, subtree:true });
+  fix(document);
+})();
+
 (function router(){
   const views = Array.from(document.querySelectorAll('.view'));
   if(!views.length) return;
@@ -3072,7 +3094,11 @@ function setMeta(r){
   // Real URLs are the source of truth. The hash still works, so the page routes when
   // opened straight off disk (file://) with no server to rewrite paths, and so any
   // #/route link already published elsewhere keeps working.
-  function norm(u){ return ('/' + String(u || '').replace(/^\/+|\/+$/g, '') + '/').replace('//','/'); }
+  function norm(u){
+    u = String(u || '');
+    if(BASE && (u === BASE || u.indexOf(BASE + '/') === 0)) u = u.slice(BASE.length);
+    return ('/' + u.replace(/^\/+|\/+$/g, '') + '/').replace('//','/');
+  }
   const BY_PATH = {};
   Object.keys(ROUTES).forEach(function(r){ BY_PATH[norm(ROUTES[r].path)] = r; });
   /* Real URLs are used only when this document is actually being served at one of
@@ -3090,7 +3116,7 @@ function setMeta(r){
     return '/';
   }
 
-  function hrefFor(r){ return HASH_MODE ? ('#' + r) : ROUTES[r].path; }
+  function hrefFor(r){ return HASH_MODE ? ('#' + r) : BASE + ROUTES[r].path; }
 
   function render(r){
     if(!ROUTES[r]) r = '/';
@@ -3103,7 +3129,7 @@ function setMeta(r){
 
     document.querySelectorAll('[data-nav]').forEach(function(a){
       const h = a.getAttribute('href') || '';
-      if(h === ROUTES[r].path || h === '#' + r) a.setAttribute('aria-current','page');
+      if(h === ROUTES[r].path || h === BASE + ROUTES[r].path || h === '#' + r) a.setAttribute('aria-current','page');
       else a.removeAttribute('aria-current');
     });
 
